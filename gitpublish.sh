@@ -59,28 +59,24 @@ if [ $? -eq 0 ]; then
                 mvn clean
                 git checkout -b build_${CurVersion}
                 git add .
-                git commit -m "Creating tab for version $CurVersion"
+                git commit -m "Creating tag for version $CurVersion"
                 git push -u origin build_${CurVersion}
                 git checkout master
 		git merge --no-edit build_${CurVersion}
+		git push
 		git checkout $BranchName
 		git merge --no-edit build_${CurVersion}
 
                 # Now we need to update all POM files so we can replace the snapshot version with the new version
                 git reset --hard
 
-                # Ensure we have the latest copy (bring in new tag)
-                git pull
-
                 # Now we increment the revision in the POM file
-                Replacement="s/${CurVersionSnapshot}/${NextVersionSnapshot}/g"
+                Replacement="s/${CurVersion}/${NextVersionSnapshot}/g"
                 find . -type f \( -name pom.xml -o -name version.json \) -exec sed -i "$Replacement" {} \;
 
                 # Commit that, too
                 git add .
                 git commit -m "Updating to version $NextVersionSnapshot"
-                git push
-                git pull
         else
                 mvn clean
                 git reset --hard
@@ -90,7 +86,5 @@ else
         mvn clean
         git reset --hard
 fi
-
-
 
 
